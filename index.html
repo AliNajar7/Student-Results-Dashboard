@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة تحليلات المتعلمين</title>
+    <title>لوحة تحليلات المتعلمين - المباشرة من n8n</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
@@ -48,15 +48,34 @@
                 </tr>
             </thead>
             <tbody id="resultsTableBody">
-                <tr><td colspan="5" class="loading">في انتظار البيانات...</td></tr>
+                <tr><td colspan="5" class="loading">جاري جلب البيانات من سيرفر n8n...</td></tr>
             </tbody>
         </table>
     </div>
 </div>
 
 <script>
-    // استخدام التخزين المحلي لعرض وتراكم البيانات فور استقبالها من n8n أو Storyline
-    let records = JSON.parse(localStorage.getItem('n8n_dashboard_data')) || [];
+    // ضع هنا رابط الـ Webhook الخاص بـ n8n (الذي يعيد الاستجابة)
+    const n8nWebhookUrl = "https://n8n-course.saytech-egy.com/webhook-test/0bc91fe3-f463-40c5-81dc-78b723249d1b";
+
+    async function fetchFromN8N() {
+        try {
+            const response = await fetch(n8nWebhookUrl);
+            const data = await response.json();
+            
+            // التعامل مع البيانات سواء كانت مصفوفة أو كائن مفرد
+            let dataArray = Array.isArray(data) ? data : [data];
+            
+            // استخراج الـ json property لو وجد من استجابة n8n
+            dataArray = dataArray.map(item => item.json || item);
+
+            if (dataArray.length > 0 && dataArray[0].name) {
+                updateDashboard(dataArray);
+            }
+        } catch (error) {
+            console.error('خطأ في جلب البيانات من n8n:', error);
+        }
+    }
 
     function updateDashboard(dataArray) {
         const totalStudents = dataArray.length;
@@ -65,7 +84,7 @@
 
         const passedCount = dataArray.filter(curr => {
             const status = (curr.status || '').toLowerCase();
-            return status === "pass" || status === "اجتاز";
+            return status === "pass" || status === "اجتاز" || status === "passed";
         }).length;
         const passRate = totalStudents > 0 ? Math.round((passedCount / totalStudents) * 100) : 0;
 
@@ -80,13 +99,9 @@
         const tbody = document.getElementById('resultsTableBody');
         tbody.innerHTML = '';
 
-        if (totalStudents === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" class="loading">لا توجد بيانات مسجلة حتى الآن</td></tr>';
-            return;
-        }
-
         dataArray.slice().reverse().forEach(row => {
-            const isPassed = (row.status || '').toLowerCase() === 'pass' || (row.status || '') === 'اجتاز';
+            const status = (row.status || '').toLowerCase();
+            const isPassed = status === 'pass' || status === 'اجتاز' || status === 'passed';
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td>${row.name || ''}</td>
@@ -99,14 +114,9 @@
         });
     }
 
-    // دالة لتلقي البيانات وإضافتها فوراً للجدول
-    window.addNewRecord = function(record) {
-        records.push(record);
-        localStorage.setItem('n8n_dashboard_data', JSON.stringify(records));
-        updateDashboard(records);
-    }
-
-    updateDashboard(records);
+    // جلب البيانات فوراً وتحديثها كل 5 ثوانٍ
+    fetchFromN8N();
+    setInterval(fetchFromN8N, 5000);
 </script>
 
 </body>
