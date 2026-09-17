@@ -118,39 +118,33 @@ function updateDashboard(dataArray) {
     document.getElementById('avgRating').innerText = avgRating + ' / 5';
 
     const tbody = document.getElementById('resultsTableBody');
-    tbody.innerHTML = '';
+    tbody.innerHTML = ''; // تفريغ الجدول تماماً لمنع التكرار
 
     if (totalStudents === 0 || !dataArray[0].name) {
-        tbody.innerHTML = '<tr><td colspan="5" class="loading">لا توجد بيانات مسجلة حتى الآن</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" class="loading">لا توجد بيانات مسجلة حتى الآن</td></tr>';
         return;
     }
 
+    // حلقة تكرارية واحدة صحيحة ومنظمة
     dataArray.slice().reverse().forEach(row => {
         const status = (row.status || '').toLowerCase();
         const isPassed = status === 'pass' || status === 'اجتاز' || status === 'passed';
         const tr = document.createElement('tr');
         
-      dataArray.slice().reverse().forEach(row => {
-    const status = (row.status || '').toLowerCase();
-    const isPassed = status === 'pass' || status === 'اجتاز' || status === 'passed';
-    const tr = document.createElement('tr');
-    
-    tr.innerHTML = `
-        <td>${row.name}</td>
-        <td>${row.email}</td>
-        <td>${row.score}%</td>
-        <td><span class="${isPassed ? 'badge-pass' : 'badge-fail'}">${isPassed ? 'اجتاز' : 'راسب'}</span></td>
-        <td>⭐ ${row.rating}</td>
-        <td>
-            <a href="https://wa.me/${row.phone || ''}?text=مرحباً%20${encodeURIComponent(row.name)}،%20لقد%20اطبعنا%20على%20نتيجتك." 
-               target="_blank" 
-               style="display: inline-block; background-color: #25d366; color: white !important; padding: 5px 12px; border-radius: 4px; text-decoration: none; font-size: 12px; font-weight: 600;">
-               واتساب
-            </a>
-        </td>
-    `;
-    tbody.appendChild(tr);
-});
+        tr.innerHTML = `
+            <td>${row.name}</td>
+            <td>${row.email}</td>
+            <td>${row.score}%</td>
+            <td><span class="${isPassed ? 'badge-pass' : 'badge-fail'}">${isPassed ? 'اجتاز' : 'راسب'}</span></td>
+            <td>⭐ ${row.rating}</td>
+            <td>
+                <a href="https://wa.me/${row.phone || ''}?text=مرحباً%20${encodeURIComponent(row.name)}،%20لقد%20اطبعنا%20على%20نتيجتك." 
+                   target="_blank" 
+                   style="display: inline-block; background-color: #25d366; color: white !important; padding: 5px 12px; border-radius: 4px; text-decoration: none; font-size: 12px; font-weight: 600;">
+                   واتساب
+                </a>
+            </td>
+        `;
         tbody.appendChild(tr);
     });
 }
