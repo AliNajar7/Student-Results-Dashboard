@@ -49,6 +49,7 @@
                     <th>الدرجة</th>
                     <th>الحالة</th>
                     <th>التقييم</th>
+                    <th>تواصل</th>
                 </tr>
             </thead>
             <tbody id="resultsTableBody">
@@ -129,15 +130,27 @@ function updateDashboard(dataArray) {
         const isPassed = status === 'pass' || status === 'اجتاز' || status === 'passed';
         const tr = document.createElement('tr');
         
-        tr.innerHTML = `
-            <td>${row.name}</td>
-            <td>${row.email}</td>
-            <td>${row.score}%</td>
-            <td><span class="${isPassed ? 'badge-pass' : 'badge-fail'}">${isPassed ? 'اجتاز' : 'راسب'}</span></td>
-            <td>
-                ⭐ ${row.rating}
-<a href="https://wa.me/${row.phone}?text=مرحباً%20${encodeURIComponent(row.name)}،%20لقد%20اطبعنا%20على%20نتيجتك." target="_blank" ...>واتساب</a>            </td>
-        `;
+      dataArray.slice().reverse().forEach(row => {
+    const status = (row.status || '').toLowerCase();
+    const isPassed = status === 'pass' || status === 'اجتاز' || status === 'passed';
+    const tr = document.createElement('tr');
+    
+    tr.innerHTML = `
+        <td>${row.name}</td>
+        <td>${row.email}</td>
+        <td>${row.score}%</td>
+        <td><span class="${isPassed ? 'badge-pass' : 'badge-fail'}">${isPassed ? 'اجتاز' : 'راسب'}</span></td>
+        <td>⭐ ${row.rating}</td>
+        <td>
+            <a href="https://wa.me/${row.phone || ''}?text=مرحباً%20${encodeURIComponent(row.name)}،%20لقد%20اطبعنا%20على%20نتيجتك." 
+               target="_blank" 
+               style="display: inline-block; background-color: #25d366; color: white !important; padding: 5px 12px; border-radius: 4px; text-decoration: none; font-size: 12px; font-weight: 600;">
+               واتساب
+            </a>
+        </td>
+    `;
+    tbody.appendChild(tr);
+});
         tbody.appendChild(tr);
     });
 }
