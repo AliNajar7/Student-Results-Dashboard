@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة تحليلات المتعلمين - المباشرة من n8n</title>
+    <title>لوحة تحليلات المتعلمين</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
@@ -26,13 +26,17 @@
 <body>
 
 <div class="container">
-    <h1>لوحة تحكم أداء المتدربين (الربط المباشر مع n8n)</h1>
+    <h1>لوحة تحكم أداء المتدربين (البيانات الحية الفورية)</h1>
 
     <div class="kpi-grid">
         <div class="kpi-card"><h3>إجمالي المتعلمين</h3><div class="value" id="totalStudents">0</div></div>
         <div class="kpi-card" style="border-color: #2ecc71;"><h3>متوسط الدرجات</h3><div class="value" id="avgScore">0%</div></div>
         <div class="kpi-card" style="border-color: #e74c3c;"><h3>نسبة الاجتياز</h3><div class="value" id="passRate">0%</div></div>
-        <div class="kpi-card" style="border-color: #f1c40f;"><h3>متوسط التقييم</h3><div class="value" id="avgRating">0 / 5</div></div>
+        <div class="kpi-card" style="border-color: #f1c40f;"><h3>متوسط التقييم</h3><div class="value" id="avgRating">0 / 0.0</div></div>
+    </div>
+
+    <div class="container" style="text-align: center; margin-bottom: 20px;">
+        <button onclick="fetchData()" style="padding: 10px 20px; background-color: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer; font-family: 'Cairo'; font-weight: bold;">تحديث البيانات الآن</button>
     </div>
 
     <div class="table-container">
@@ -48,32 +52,32 @@
                 </tr>
             </thead>
             <tbody id="resultsTableBody">
-                <tr><td colspan="5" class="loading">جاري جلب البيانات من سيرفر n8n...</td></tr>
+                <tr><td colspan="5" class="loading">اضغط على زر التحديث لجلب البيانات...</td></tr>
             </tbody>
         </table>
     </div>
 </div>
 
 <script>
-    // ضع هنا رابط الـ Webhook الخاص بـ n8n (الذي يعيد الاستجابة)
-    const n8nWebhookUrl = "https://n8n-course.saytech-egy.com/webhook-test/0bc91fe3-f463-40c5-81dc-78b723249d1b";
+    // ضع هنا رابط الـ Production Webhook الخاص بـ n8n
+    const n8nUrl = "ضع_رابط_الـ_Production_هنا";
 
-    async function fetchFromN8N() {
+    async function fetchData() {
+        const tbody = document.getElementById('resultsTableBody');
+        tbody.innerHTML = '<tr><td colspan="5" class="loading">جاري جلب البيانات...</td></tr>';
+
         try {
-            const response = await fetch(n8nWebhookUrl);
+            const response = await fetch(n8nUrl);
             const data = await response.json();
             
-            // التعامل مع البيانات سواء كانت مصفوفة أو كائن مفرد
-            let dataArray = Array.isArray(data) ? data : [data];
-            
-            // استخراج الـ json property لو وجد من استجابة n8n
-            dataArray = dataArray.map(item => item.json || item);
+            let records = Array.isArray(data) ? data : [data];
+            // تنقية البيانات لتناسب الهيكل الناتج من n8n
+            records = records.map(item => item.json || item);
 
-            if (dataArray.length > 0 && dataArray[0].name) {
-                updateDashboard(dataArray);
-            }
+            updateDashboard(records);
         } catch (error) {
-            console.error('خطأ في جلب البيانات من n8n:', error);
+            console.error('خطأ في الاتصال:', error);
+            tbody.innerHTML = '<tr><td colspan="5" class="loading" style="color: red;">تعذر الاتصال بسيرفر n8n</td></tr>';
         }
     }
 
@@ -88,7 +92,7 @@
         }).length;
         const passRate = totalStudents > 0 ? Math.round((passedCount / totalStudents) * 100) : 0;
 
-        const totalRating = dataArray.reduce((acc, curr) => acc + (parseInt(curr.rating) || 0), 0);
+        const totalRating = dataArray.reduce((acc, curr) => acc + (parseFloat(curr.rating) || 0), 0);
         const avgRating = totalStudents > 0 ? (totalRating / totalStudents).toFixed(1) : 0;
 
         document.getElementById('totalStudents').innerText = totalStudents;
@@ -98,6 +102,11 @@
 
         const tbody = document.getElementById('resultsTableBody');
         tbody.innerHTML = '';
+
+        if (totalStudents === 0 || !dataArray[0].name) {
+            tbody.innerHTML = '<tr><td colspan="5" class="loading">لا توجد بيانات مسجلة حتى الآن</td></tr>';
+            return;
+        }
 
         dataArray.slice().reverse().forEach(row => {
             const status = (row.status || '').toLowerCase();
@@ -113,10 +122,6 @@
             tbody.appendChild(tr);
         });
     }
-
-    // جلب البيانات فوراً وتحديثها كل 5 ثوانٍ
-    fetchFromN8N();
-    setInterval(fetchFromN8N, 5000);
 </script>
 
 </body>
