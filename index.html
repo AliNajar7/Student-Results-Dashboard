@@ -88,7 +88,7 @@
 }
 
 function updateDashboard(dataArray) {
-    // تطبيع كل صف: توحيد أسماء المفاتيح إلى حروف صغيرة بغض النظر عن شكلها في الشيت
+    // تطبيع كل صف: توحيد أسماء المفاتيح إلى حروف صغيرة
     dataArray = dataArray.map(row => ({
         name: row.Name || row.name || '',
         email: row.Email || row.email || '',
@@ -127,12 +127,16 @@ function updateDashboard(dataArray) {
         const status = (row.status || '').toLowerCase();
         const isPassed = status === 'pass' || status === 'اجتاز' || status === 'passed';
         const tr = document.createElement('tr');
+        
         tr.innerHTML = `
             <td>${row.name}</td>
             <td>${row.email}</td>
             <td>${row.score}%</td>
             <td><span class="${isPassed ? 'badge-pass' : 'badge-fail'}">${isPassed ? 'اجتاز' : 'راسب'}</span></td>
-            <td>⭐ ${row.rating}</td>
+            <td>
+                ⭐ ${row.rating}
+                <a href="https://wa.me/?text=مرحباً%20${encodeURIComponent(row.name)}،%20لقد%20اطبعنا%20على%20نتيجتك." target="_blank" style="margin-right: 10px; background: #25d366; color: white; padding: 4px 8px; border-radius: 4px; text-decoration: none; font-size: 12px;">واتساب</a>
+            </td>
         `;
         tbody.appendChild(tr);
     });
