@@ -62,24 +62,30 @@
     // ضع هنا رابط الـ Production Webhook الخاص بـ n8n
     const n8nUrl = "https://n8n-course.saytech-egy.com/webhook/47483ea0-003a-4990-bb9c-8616407db55a";
 
-    async function fetchData() {
-        const tbody = document.getElementById('resultsTableBody');
-        tbody.innerHTML = '<tr><td colspan="5" class="loading">جاري جلب البيانات...</td></tr>';
+  async function fetchData() {
+    const tbody = document.getElementById('resultsTableBody');
+    tbody.innerHTML = '<tr><td colspan="5" class="loading">جاري جلب البيانات...</td></tr>';
 
-        try {
-            const response = await fetch(n8nUrl);
-            const data = await response.json();
-            
-            let records = Array.isArray(data) ? data : [data];
-            // تنقية البيانات لتناسب الهيكل الناتج من n8n
-            records = records.map(item => item.json || item);
+    try {
+        const response = await fetch(n8nUrl);
+        const data = await response.json();
+        
+        console.log("البيانات المستلمة من n8n:", data); // للتأكد عبر الـ Console
 
-            updateDashboard(records);
-        } catch (error) {
-            console.error('خطأ في الاتصال:', error);
-            tbody.innerHTML = '<tr><td colspan="5" class="loading" style="color: red;">تعذر الاتصال بسيرفر n8n</td></tr>';
+        // التأكد من تحويل البيانات إلى مصفوفة بغض النظر عن شكلها
+        let records = [];
+        if (Array.isArray(data)) {
+            records = data.map(item => item.json || item);
+        } else if (data && typeof data === 'object') {
+            records = [data.json || data];
         }
+
+        updateDashboard(records);
+    } catch (error) {
+        console.error('خطأ في الاتصال:', error);
+        tbody.innerHTML = '<tr><td colspan="5" class="loading" style="color: red;">تعذر الاتصال بسيرفر n8n</td></tr>';
     }
+}
 
 function updateDashboard(dataArray) {
     // تطبيع كل صف: توحيد أسماء المفاتيح إلى حروف صغيرة بغض النظر عن شكلها في الشيت
