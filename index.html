@@ -81,47 +81,56 @@
         }
     }
 
-    function updateDashboard(dataArray) {
-        const totalStudents = dataArray.length;
-        const totalScore = dataArray.reduce((acc, curr) => acc + (parseFloat(curr.score) || 0), 0);
-        const avgScore = totalStudents > 0 ? Math.round(totalScore / totalStudents) : 0;
+function updateDashboard(dataArray) {
+    // تطبيع كل صف: توحيد أسماء المفاتيح إلى حروف صغيرة بغض النظر عن شكلها في الشيت
+    dataArray = dataArray.map(row => ({
+        name: row.Name || row.name || '',
+        email: row.Email || row.email || '',
+        score: row.Score || row.score || 0,
+        status: row.Status || row.status || '',
+        rating: row.Rating || row.rating || 0
+    }));
 
-        const passedCount = dataArray.filter(curr => {
-            const status = (curr.status || '').toLowerCase();
-            return status === "pass" || status === "اجتاز" || status === "passed";
-        }).length;
-        const passRate = totalStudents > 0 ? Math.round((passedCount / totalStudents) * 100) : 0;
+    const totalStudents = dataArray.length;
+    const totalScore = dataArray.reduce((acc, curr) => acc + (parseFloat(curr.score) || 0), 0);
+    const avgScore = totalStudents > 0 ? Math.round(totalScore / totalStudents) : 0;
 
-        const totalRating = dataArray.reduce((acc, curr) => acc + (parseFloat(curr.rating) || 0), 0);
-        const avgRating = totalStudents > 0 ? (totalRating / totalStudents).toFixed(1) : 0;
+    const passedCount = dataArray.filter(curr => {
+        const status = (curr.status || '').toLowerCase();
+        return status === "pass" || status === "اجتاز" || status === "passed";
+    }).length;
+    const passRate = totalStudents > 0 ? Math.round((passedCount / totalStudents) * 100) : 0;
 
-        document.getElementById('totalStudents').innerText = totalStudents;
-        document.getElementById('avgScore').innerText = avgScore + '%';
-        document.getElementById('passRate').innerText = passRate + '%';
-        document.getElementById('avgRating').innerText = avgRating + ' / 5';
+    const totalRating = dataArray.reduce((acc, curr) => acc + (parseFloat(curr.rating) || 0), 0);
+    const avgRating = totalStudents > 0 ? (totalRating / totalStudents).toFixed(1) : 0;
 
-        const tbody = document.getElementById('resultsTableBody');
-        tbody.innerHTML = '';
+    document.getElementById('totalStudents').innerText = totalStudents;
+    document.getElementById('avgScore').innerText = avgScore + '%';
+    document.getElementById('passRate').innerText = passRate + '%';
+    document.getElementById('avgRating').innerText = avgRating + ' / 5';
 
-        if (totalStudents === 0 || !dataArray[0].name) {
-            tbody.innerHTML = '<tr><td colspan="5" class="loading">لا توجد بيانات مسجلة حتى الآن</td></tr>';
-            return;
-        }
+    const tbody = document.getElementById('resultsTableBody');
+    tbody.innerHTML = '';
 
-        dataArray.slice().reverse().forEach(row => {
-            const status = (row.status || '').toLowerCase();
-            const isPassed = status === 'pass' || status === 'اجتاز' || status === 'passed';
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${row.name || ''}</td>
-                <td>${row.email || ''}</td>
-                <td>${row.score || 0}%</td>
-                <td><span class="${isPassed ? 'badge-pass' : 'badge-fail'}">${isPassed ? 'اجتاز' : 'راسب'}</span></td>
-                <td>⭐ ${row.rating || 0}</td>
-            `;
-            tbody.appendChild(tr);
-        });
+    if (totalStudents === 0 || !dataArray[0].name) {
+        tbody.innerHTML = '<tr><td colspan="5" class="loading">لا توجد بيانات مسجلة حتى الآن</td></tr>';
+        return;
     }
+
+    dataArray.slice().reverse().forEach(row => {
+        const status = (row.status || '').toLowerCase();
+        const isPassed = status === 'pass' || status === 'اجتاز' || status === 'passed';
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${row.name}</td>
+            <td>${row.email}</td>
+            <td>${row.score}%</td>
+            <td><span class="${isPassed ? 'badge-pass' : 'badge-fail'}">${isPassed ? 'اجتاز' : 'راسب'}</span></td>
+            <td>⭐ ${row.rating}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
 </script>
 
 </body>
