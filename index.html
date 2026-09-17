@@ -92,6 +92,7 @@ function updateDashboard(dataArray) {
     dataArray = dataArray.map(row => ({
         name: row.Name || row.name || '',
         email: row.Email || row.email || '',
+        phone: row.Phone || row.phone || '',
         score: row.Score || row.score || 0,
         status: row.Status || row.status || '',
         rating: row.Rating || row.rating || 0
@@ -135,8 +136,7 @@ function updateDashboard(dataArray) {
             <td><span class="${isPassed ? 'badge-pass' : 'badge-fail'}">${isPassed ? 'اجتاز' : 'راسب'}</span></td>
             <td>
                 ⭐ ${row.rating}
-                <a href="https://wa.me/?text=مرحباً%20${encodeURIComponent(row.name)}،%20لقد%20اطبعنا%20على%20نتيجتك." target="_blank" style="margin-right: 10px; background: #25d366; color: white; padding: 4px 8px; border-radius: 4px; text-decoration: none; font-size: 12px;">واتساب</a>
-            </td>
+<a href="https://wa.me/${row.phone}?text=مرحباً%20${encodeURIComponent(row.name)}،%20لقد%20اطبعنا%20على%20نتيجتك." target="_blank" ...>واتساب</a>            </td>
         `;
         tbody.appendChild(tr);
     });
